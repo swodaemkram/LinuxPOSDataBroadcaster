@@ -37,9 +37,9 @@ int main( int argc, char *argv[])
    int broadcastOff = 0;
    char *broadcastMessage;
 
-   broadcastMessage = "This is a test";
+   broadcastMessage = "Mark is Cool";
 
-   printf("Message %s\n", broadcastMessage);
+   printf("Transmitted %s\n", broadcastMessage);
 
    /*Create client socket*/
    clientToServer_socket=socket(AF_INET, SOCK_DGRAM, 0);
