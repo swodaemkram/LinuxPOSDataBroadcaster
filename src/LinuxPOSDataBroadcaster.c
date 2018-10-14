@@ -17,7 +17,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/uio.h>
-
+#include <sys/types.h>
+#include <netdb.h>
+#include <stdlib.h>
+#include <errno.h>
 
 
 int main(void) {
