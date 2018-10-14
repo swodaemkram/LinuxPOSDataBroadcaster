@@ -21,6 +21,8 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <time.h>
+
 
 #define SERVER "127.0.0.1"    //Local Host I.P.
 #define PORT 10002          //Port to use for testing
