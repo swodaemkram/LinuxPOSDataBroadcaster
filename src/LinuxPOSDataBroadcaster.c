@@ -22,6 +22,9 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#define SERVER "127.0.0.1"    //Local Host I.P.
+#define PORT 10002          //Port to use for testing
+
 
 int main( int argc, char *argv[])
 {
@@ -31,8 +34,8 @@ int main( int argc, char *argv[])
    struct sockaddr_in Remote_Address, Server_Address;
    struct hostent *hostPointer;
    int message, checkCall;
-   int counter1 = 0;
-   int counter2 = 0;
+
+
    int broadcastOn = 1;
    int broadcastOff = 0;
    char *broadcastMessage;
