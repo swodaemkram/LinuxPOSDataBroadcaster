@@ -31,7 +31,7 @@ int main(void)
     char buf[BUFLEN];
     char message[BUFLEN];
 
-    if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+    if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket cant be made then Die
     {
         die("socket");
     }
@@ -42,31 +42,22 @@ int main(void)
 
     if (inet_aton(SERVER , &si_other.sin_addr) == 0)
     {
-        fprintf(stderr, "inet_aton() failed\n");
+        fprintf(stderr, "inet_aton() failed\n");          //if we cant open a socket program fails with error 1
         exit(1);
     }
 
     while(1)
     {
-        printf("Enter message : ");
+        printf("Enter message : ");                       //enter something to send
         gets(message);
 
         //send the message
-        if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
+        if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1) //Send Data through Socket
         {
             die("sendto()");
         }
 
-        //receive a reply and print it
-        //clear the buffer by filling null, it might have previously received data
-        memset(buf,'\0', BUFLEN);
-        //try to receive some data, this is a blocking call
-        if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen) == -1)
-        {
-            die("recvfrom()");
-        }
 
-        puts(buf);
     }
 
     close(s);
