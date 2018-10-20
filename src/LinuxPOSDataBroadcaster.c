@@ -17,6 +17,7 @@
 #define SERVER "233.0.0.1"
 #define BUFLEN 512  //Max length of buffer
 #define PORT 8888   //The port on which to send data
+#define VER  "v 0.0.1\n"       //Version of software
 
 void die(char *s)
 {
@@ -50,6 +51,18 @@ int main(int argc, char *argv[])
         printf("\n");
         exit(1);
     }
+
+    //Finished with help file
+    //Clean up arguments from the command line
+
+
+
+
+
+
+
+    // Finished cleaning up arguments from the command line and I have passed them to their variables
+
 
 
     if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket cant be made then Die
