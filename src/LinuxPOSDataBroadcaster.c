@@ -24,12 +24,33 @@ void die(char *s)
     exit(1);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    struct sockaddr_in si_other;
+
+	struct sockaddr_in si_other;
     int s, i, slen=sizeof(si_other);
     char buf[BUFLEN];
     char message[BUFLEN];
+
+    //Do this if there are too few arguments then exit
+
+    if (argc < 2 ){
+        printf("\n");
+    	printf("LinuxPOSDataBroadcaster By Mark Meadows v 0.0.1\n");
+    	printf("\n");
+    	printf("-a address to use\n");
+        printf("-p port to use\n");
+        printf("-P protocal to use tcp or udp\n");
+        printf("-d data file location Path to data file\n");
+        printf("-l loop data file Keep sending data in the data file over and over again\n");
+        printf("-h this help information\n");
+        printf("-v Version info\n");
+        printf("\n");
+        printf(" Example usage LinuxPOSDataBrodcaster -a 231.0.0.1 -p 20001 -P udp -d test.dat -l\n");
+        printf("\n");
+        exit(1);
+    }
+
 
     if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket cant be made then Die
     {
