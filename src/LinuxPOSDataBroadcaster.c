@@ -8,22 +8,24 @@
  ============================================================================
  */
 
-#include<stdio.h> //printf
-#include<string.h> //memset
-#include<stdlib.h> //exit(0);
+#include<stdio.h>                                                //printf
+#include<string.h>                                              //memset
+#include<stdlib.h>                                             //exit(0);
 #include<arpa/inet.h>
 #include<sys/socket.h>
 
 #define SERVER "233.0.0.1"
-#define BUFLEN 512  //Max length of buffer
-#define PORT 8888   //The port on which to send data
-#define VER  "v 0.0.1\n"       //Version of software
+#define BUFLEN 512                                            //Max length of buffer
+#define PORT 8888                                             //The port on which to send data
+#define VER  "v 0.0.1\n"                                      //Version of software
 
-void die(char *s)
+void print_help();                                            //declare print help function
+void die(char *s)                                             //declare die function
 {
     perror(s);
     exit(1);
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -33,37 +35,21 @@ int main(int argc, char *argv[])
     char buf[BUFLEN];
     char message[BUFLEN];
 
-    //Do this if there are too few arguments then exit
+    if (argc < 2 ) 	print_help();                              //Do this if there are too few arguments then exit
+    if (argc > 5 )  print_help();							//Too many arguments
+                                                              //Clean up arguments from the command line
+                                                               //*******************************************************************************
+    														//********* Here is were Im working ************************************************
+     int z;
 
-    if (argc < 2 ){
-        printf("\n");
-    	printf("LinuxPOSDataBroadcaster By Mark Meadows v 0.0.1\n");
-    	printf("\n");
-    	printf("-a address to use\n");
-        printf("-p port to use\n");
-        printf("-P protocal to use tcp or udp\n");
-        printf("-d data file location Path to data file\n");
-        printf("-l loop data file Keep sending data in the data file over and over again\n");
-        printf("-h this help information\n");
-        printf("-v Version info\n");
-        printf("\n");
-        printf(" Example usage LinuxPOSDataBrodcaster -a 231.0.0.1 -p 20001 -P udp -d test.dat -l\n");
-        printf("\n");
-        exit(1);
-    }
+      for (z = 1; z < argc; z++)  /* Skip argv[0] (program name). */
+     {
+                     printf("%s\n", argv[z]);
 
-    //Finished with help file
-    //Clean up arguments from the command line
-
-
-
-
-
-
-
-    // Finished cleaning up arguments from the command line and I have passed them to their variables
-
-
+      }
+        														//*********************************************************************
+                                                             //*******************************************************************************
+                                                              // Finished cleaning up arguments from the command line and I have passed them to their variables
 
     if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket cant be made then Die
     {
@@ -91,9 +77,33 @@ int main(int argc, char *argv[])
             die("sendto()");
         }
 
-
     }
+
 
     close(s);
     return 0;
 }
+
+
+    void print_help()
+
+    {
+    	 printf("\n");
+    	    	printf("LinuxPOSDataBroadcaster By Mark Meadows v 0.0.1\n");
+    	    	printf("\n");
+    	    	printf("-a, address to use\n");
+    	        printf("-p, port to use\n");
+    	        printf("-P, protocal to use tcp or udp\n");
+    	        printf("-d, data file location Path to data file\n");
+    	        printf("-l, loop data file Keep sending data in the data file over and over again\n");
+    	        printf("-h, this help information\n");
+    	        printf("-v, Version info\n");
+    	        printf("\n");
+    	        printf(" Example usage LinuxPOSDataBrodcaster -a 231.0.0.1 -p 20001 -P udp -d test.dat -l\n");
+    	        printf("\n");
+    	        exit(1);
+    }
+
+
+
+
