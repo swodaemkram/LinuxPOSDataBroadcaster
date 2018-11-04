@@ -14,9 +14,7 @@
 #include<arpa/inet.h>
 #include<sys/socket.h>
 
-//#define SERVER "233.0.0.1"
 #define BUFLEN 512                                            //Max length of buffer
-//#define PORT 8888                                             //The port on which to send data
 #define VER  "v 0.0.1\n"                                      //Version of software
 
 void print_help();                                            //declare print help function
@@ -29,6 +27,7 @@ void die(char *s)                                             //declare die func
 
 
 int main(int argc, char *argv[])
+
 {
 
 	char SERVER[] = "233.0.0.1";
@@ -43,17 +42,13 @@ int main(int argc, char *argv[])
     int s, i, slen=sizeof(si_other);
     char buf[BUFLEN];
     char message[BUFLEN];
-
+    int z;
     if (argc < 2 ) 	print_help();                                  //Do this if there are too few arguments then exit
     if (argc < 9 )  print_help();							       //Too many arguments
                                                                    //Clean up arguments from the command line
-                                                                   //*******************************************************************************
-    														       //********* Here is were Im working ************************************************
-     int z;
 
       for (z = 1; z < argc; z++)                                  //* Skip argv[0] (program name). */
      {
-
 
                    switch (argv[z][1])
                     {
@@ -89,15 +84,10 @@ int main(int argc, char *argv[])
 
                     }
 
-
-
-
      }
-        														    //*********************************************************************
-                                                                   //*******************************************************************************
-                                                                  // Finished cleaning up arguments from the command line and I have passed them to their variables
+                         // Finished cleaning up arguments from the command line and I have passed them to their variables
 
-
+      printf("\n");
       printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d \n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT);
 
 
