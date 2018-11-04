@@ -35,12 +35,15 @@ int main(int argc, char *argv[])
 	char PROTOCOL[] = "udp";
     char DATAFILE[] = "default.dat";
     int REPEAT =  0;
+    char filebuff[255];                                             //File Buffer
+
+    FILE *fp;
 
 
 
 	struct sockaddr_in si_other;
     int s, i, slen=sizeof(si_other);
-    char buf[BUFLEN];
+    //char buf[BUFLEN];
     char message[BUFLEN];
     int z;
     if (argc < 2 ) 	print_help();                                  //Do this if there are too few arguments then exit
@@ -55,32 +58,27 @@ int main(int argc, char *argv[])
                     case 'a':
 
                     	    strcpy (SERVER, argv[z+1]);
-                    		//printf ("%s\n",SERVER);
                     		break;
 
                     case 'p' :
 
                     		PORT = atoi(argv[z+1]);
-                    		//printf ("%d\n", PORT);
                     		break;
 
                     case 'P'  :
 
                     		strcpy (PROTOCOL, argv[z+1]);
-                    		//printf("%s\n",PROTOCOL);
                     		break;
 
                     case 'd'  :
 
                     		strcpy (DATAFILE, argv[z+2]);
-                    		//printf("%s\n",DATAFILE);
                     		z++;
                     		break;
 
                     case 'L'  :
                     		 REPEAT = 1;
-                    	     //printf("%d\n",REPEAT);
-                    		 break;
+                    	     break;
 
                     }
 
@@ -89,6 +87,16 @@ int main(int argc, char *argv[])
 
       printf("\n");
       printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d \n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT);
+
+      	  	  	  	  	  //Lets Open The Data File
+
+      fp = fopen(DATAFILE,"r");                                    //open the file
+      //fgets(filebuff, 255, (FILE*)fp);**
+     // printf(" %s\n", filebuff ); **
+
+
+
+
 
 
 
@@ -107,20 +115,39 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    while(1)
-    {
-        printf("Enter message : ");                       //enter something to send
-        gets(message);
 
-        //send the message
+    while(!feof(fp) )                                        //Send Data until the End of the data file
+
+    {
+
+    	sleep(1);
+    	fgets(filebuff, 255, (FILE*)fp);
+    	strcpy(message , filebuff);
+
+
+    	//send the message
         if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1) //Send Data through Socket
+
         {
             die("sendto()");
         }
 
+
+        if (REPEAT == 1 && feof(fp))
+
+        {
+
+        	int fclose(FILE *fp );
+        	fp = fopen(DATAFILE,"r");                   //Reopen File So We Can Repeat it again
+
+        }
+
+
+
+
     }
 
-
+    int fclose( FILE *fp ); 							//Lets Close the data file
     close(s);
     return 0;
 }
