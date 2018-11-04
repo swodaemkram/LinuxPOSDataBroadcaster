@@ -14,12 +14,13 @@
 #include<arpa/inet.h>
 #include<sys/socket.h>
 
-#define SERVER "233.0.0.1"
+//#define SERVER "233.0.0.1"
 #define BUFLEN 512                                            //Max length of buffer
-#define PORT 8888                                             //The port on which to send data
+//#define PORT 8888                                             //The port on which to send data
 #define VER  "v 0.0.1\n"                                      //Version of software
 
 void print_help();                                            //declare print help function
+
 void die(char *s)                                             //declare die function
 {
     perror(s);
@@ -30,28 +31,78 @@ void die(char *s)                                             //declare die func
 int main(int argc, char *argv[])
 {
 
+	char SERVER[] = "233.0.0.1";
+	int PORT = 8888;
+	char PROTOCOL[] = "udp";
+    char DATAFILE[] = "default.dat";
+    int REPEAT =  0;
+
+
+
 	struct sockaddr_in si_other;
     int s, i, slen=sizeof(si_other);
     char buf[BUFLEN];
     char message[BUFLEN];
 
-    if (argc < 2 ) 	print_help();                              //Do this if there are too few arguments then exit
-    if (argc > 5 )  print_help();							//Too many arguments
-                                                              //Clean up arguments from the command line
-                                                               //*******************************************************************************
-    														//********* Here is were Im working ************************************************
+    if (argc < 2 ) 	print_help();                                  //Do this if there are too few arguments then exit
+    if (argc < 9 )  print_help();							       //Too many arguments
+                                                                   //Clean up arguments from the command line
+                                                                   //*******************************************************************************
+    														       //********* Here is were Im working ************************************************
      int z;
 
-      for (z = 1; z < argc; z++)  /* Skip argv[0] (program name). */
+      for (z = 1; z < argc; z++)                                  //* Skip argv[0] (program name). */
      {
-                     printf("%s\n", argv[z]);
 
-      }
-        														//*********************************************************************
-                                                             //*******************************************************************************
-                                                              // Finished cleaning up arguments from the command line and I have passed them to their variables
 
-    if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket cant be made then Die
+                   switch (argv[z][1])
+                    {
+                    case 'a':
+
+                    	    strcpy (SERVER, argv[z+1]);
+                    		//printf ("%s\n",SERVER);
+                    		break;
+
+                    case 'p' :
+
+                    		PORT = atoi(argv[z+1]);
+                    		//printf ("%d\n", PORT);
+                    		break;
+
+                    case 'P'  :
+
+                    		strcpy (PROTOCOL, argv[z+1]);
+                    		//printf("%s\n",PROTOCOL);
+                    		break;
+
+                    case 'd'  :
+
+                    		strcpy (DATAFILE, argv[z+2]);
+                    		//printf("%s\n",DATAFILE);
+                    		z++;
+                    		break;
+
+                    case 'L'  :
+                    		 REPEAT = 1;
+                    	     //printf("%d\n",REPEAT);
+                    		 break;
+
+                    }
+
+
+
+
+     }
+        														    //*********************************************************************
+                                                                   //*******************************************************************************
+                                                                  // Finished cleaning up arguments from the command line and I have passed them to their variables
+
+
+      printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d \n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT);
+
+
+
+      if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket cant be made then Die
     {
         die("socket");
     }
