@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
                    case 'd'  :
 
                     		strcpy (DATAFILE, argv[z+1]);
-                    		//z++;
                     		break;
 
                    case 'L'  :
@@ -86,17 +85,20 @@ int main(int argc, char *argv[])
                     }
                    }
      }
-                         // Finished cleaning up arguments from the command line and I have passed them to their variables
+
+// Finished cleaning up arguments from the command line and I have passed them to their variables ======================================================
 
       printf("\n");
       printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d \n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT);
 
       	  	  	  	  	  //Lets Open The Data File
 
-      fp = fopen(DATAFILE,"r");                                    //open the file
+      fp = fopen(DATAFILE,"r");                                    //open the data file
 
-
-
+      if (strcmp(PROTOCOL , "tcp") == 0)                           //Should we do TCP connection ?
+      {
+     	      	  do_tcp();
+      }
 
 
       if  ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket can't be made then Die
@@ -155,7 +157,23 @@ int main(int argc, char *argv[])
 }
 
 
-    void print_help()
+//Lets Do TCP Protocol =============================================================================================================================//
+
+void do_tcp()
+{
+	printf("Doing TCP Protocol\n\n");
+
+
+
+
+
+  exit(0);
+
+}
+
+//Lets Print Help ====================================================================================================================================//
+
+void print_help()
 
     {
     	 printf("\n");
