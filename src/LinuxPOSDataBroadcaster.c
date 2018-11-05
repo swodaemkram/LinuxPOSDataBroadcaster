@@ -19,6 +19,8 @@
 
 void print_help();                                            //declare print help function
 
+void do_tcp();
+
 void die(char *s)                                             //declare die function
 {
     perror(s);
@@ -36,52 +38,53 @@ int main(int argc, char *argv[])
     char DATAFILE[] = "default.dat";
     int REPEAT =  0;
     char filebuff[255];                                             //File Buffer
-
     FILE *fp;
 
 
 
 	struct sockaddr_in si_other;
     int s, i, slen=sizeof(si_other);
-    //char buf[BUFLEN];
     char message[BUFLEN];
     int z;
     if (argc < 2 ) 	print_help();                                  //Do this if there are too few arguments then exit
     if (argc < 9 )  print_help();							       //Too many arguments
                                                                    //Clean up arguments from the command line
 
+
+
       for (z = 1; z < argc; z++)                                  //* Skip argv[0] (program name). */
      {
-
+                   if (argv[z][0] == '-')
+                   {
                    switch (argv[z][1])
                     {
                     case 'a':
-
-                    	    strcpy (SERVER, argv[z+1]);
+                       	    strcpy (SERVER, argv[z+1]);
                     		break;
 
-                    case 'p' :
+
+                   case 'p' :
 
                     		PORT = atoi(argv[z+1]);
                     		break;
 
-                    case 'P'  :
+                   case 'P'  :
 
                     		strcpy (PROTOCOL, argv[z+1]);
                     		break;
 
-                    case 'd'  :
+                   case 'd'  :
 
-                    		strcpy (DATAFILE, argv[z+2]);
-                    		z++;
+                    		strcpy (DATAFILE, argv[z+1]);
+                    		//z++;
                     		break;
 
-                    case 'L'  :
+                   case 'L'  :
                     		 REPEAT = 1;
                     	     break;
 
                     }
-
+                   }
      }
                          // Finished cleaning up arguments from the command line and I have passed them to their variables
 
@@ -91,19 +94,17 @@ int main(int argc, char *argv[])
       	  	  	  	  	  //Lets Open The Data File
 
       fp = fopen(DATAFILE,"r");                                    //open the file
-      //fgets(filebuff, 255, (FILE*)fp);**
-     // printf(" %s\n", filebuff ); **
 
 
 
 
 
-
-
-      if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket cant be made then Die
-    {
+      if  ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket can't be made then Die
+      {
         die("socket");
-    }
+      }
+
+
 
     memset((char *) &si_other, 0, sizeof(si_other));
     si_other.sin_family = AF_INET;
@@ -120,7 +121,7 @@ int main(int argc, char *argv[])
 
     {
 
-    	sleep(1);
+    	sleep(1);                                            //Lets Slow down just a little
     	fgets(filebuff, 255, (FILE*)fp);
     	strcpy(message , filebuff);
 
@@ -129,15 +130,15 @@ int main(int argc, char *argv[])
         if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1) //Send Data through Socket
 
         {
-            die("sendto()");
+            die("sendto()");                                //Connection Can't be made
         }
 
 
-        if (REPEAT == 1 && feof(fp))
+        if (REPEAT == 1 && feof(fp))                      //Do We Need to repeat the data file ?
 
         {
 
-        	int fclose(FILE *fp );
+        	int fclose(FILE *fp );						//Close the data file
         	fp = fopen(DATAFILE,"r");                   //Reopen File So We Can Repeat it again
 
         }
@@ -149,6 +150,7 @@ int main(int argc, char *argv[])
 
     int fclose( FILE *fp ); 							//Lets Close the data file
     close(s);
+    printf("Data Sent Successfully\n");
     return 0;
 }
 
@@ -171,6 +173,7 @@ int main(int argc, char *argv[])
     	        printf("\n");
     	        exit(1);
     }
+
 
 
 
