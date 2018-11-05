@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
       for (z = 1; z < argc; z++)                                  //* Skip argv[0] (program name). */
      {
-                   if (argv[z][0] == '-')
+                   if (argv[z][0] == '-')						  //Fixes the Command Line Argument Problem
                    {
                    switch (argv[z][1])
                     {
