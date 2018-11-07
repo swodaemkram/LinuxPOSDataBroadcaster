@@ -13,13 +13,14 @@
 #include<stdlib.h>                                             //exit(0);
 #include<arpa/inet.h>
 #include<sys/socket.h>
+#include<netinet/in.h>
 
 #define BUFLEN 512                                            //Max length of buffer
 #define VER  "v 0.0.1\n"                                      //Version of software
 
 void print_help();                                            //declare print help function
 
-void do_tcp();
+void do_tcp(int PORT, char *SERVER, char *DATAFILE);
 
 void die(char *s)                                             //declare die function
 {
@@ -46,6 +47,10 @@ int main(int argc, char *argv[])
     int s, i, slen=sizeof(si_other);
     char message[BUFLEN];
     int z;
+
+
+
+
     if (argc < 2 ) 	print_help();                                  //Do this if there are too few arguments then exit
     if (argc < 9 )  print_help();							       //Too many arguments
                                                                    //Clean up arguments from the command line
@@ -97,7 +102,7 @@ int main(int argc, char *argv[])
 
       if (strcmp(PROTOCOL , "tcp") == 0)                           //Should we do TCP connection ?
       {
-     	      	  do_tcp();
+     	      	  do_tcp(PORT, SERVER, DATAFILE);
       }
 
 
@@ -159,12 +164,11 @@ int main(int argc, char *argv[])
 
 //Lets Do TCP Protocol =============================================================================================================================//
 
-void do_tcp()
+do_tcp(int PORT, char SERVER[], char DATAFILE[])
+
 {
-	printf("Doing TCP Protocol\n\n");
 
-
-
+	printf("port: %d server: %s  Datafile: %s \n", PORT, SERVER, DATAFILE);
 
 
   exit(0);
