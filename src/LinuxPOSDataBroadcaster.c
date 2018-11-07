@@ -13,14 +13,19 @@
 #include<stdlib.h>                                             //exit(0);
 #include<arpa/inet.h>
 #include<sys/socket.h>
+#include<sys/types.h>
 #include<netinet/in.h>
+#include<netdb.h>
+#include<unistd.h>
+#include <errno.h>
+
 
 #define BUFLEN 512                                            //Max length of buffer
 #define VER  "v 0.0.1\n"                                      //Version of software
 
 void print_help();                                            //declare print help function
 
-void do_tcp(int PORT, char *SERVER, char *DATAFILE);
+void do_tcp(int PORT, char *SERVER, char *DATAFILE);			//Declare do_tcp structure
 
 void die(char *s)                                             //declare die function
 {
@@ -41,21 +46,14 @@ int main(int argc, char *argv[])
     char filebuff[255];                                             //File Buffer
     FILE *fp;
 
-
-
 	struct sockaddr_in si_other;
-    int s, i, slen=sizeof(si_other);
+    int s, slen=sizeof(si_other);
     char message[BUFLEN];
     int z;
-
-
-
 
     if (argc < 2 ) 	print_help();                                  //Do this if there are too few arguments then exit
     if (argc < 9 )  print_help();							       //Too many arguments
                                                                    //Clean up arguments from the command line
-
-
 
       for (z = 1; z < argc; z++)                                  //* Skip argv[0] (program name). */
      {
@@ -66,7 +64,6 @@ int main(int argc, char *argv[])
                     case 'a':
                        	    strcpy (SERVER, argv[z+1]);
                     		break;
-
 
                    case 'p' :
 
@@ -102,10 +99,10 @@ int main(int argc, char *argv[])
 
       if (strcmp(PROTOCOL , "tcp") == 0)                           //Should we do TCP connection ?
       {
-     	      	  do_tcp(PORT, SERVER, DATAFILE);
+     	      	  do_tcp(PORT, SERVER, DATAFILE);					//if yes lets to TCP
       }
 
-
+      	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	//otherwise lets do UDP
       if  ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket can't be made then Die
       {
         die("socket");
@@ -151,20 +148,18 @@ int main(int argc, char *argv[])
         }
 
 
-
-
     }
 
     int fclose( FILE *fp ); 							//Lets Close the data file
     close(s);
-    printf("Data Sent Successfully\n");
-    return 0;
+    printf("Data Sent Successfully\n");					//Print out everthing was transmitted OK
+    return 0;											//Exit Clean
 }
 
 
 //Lets Do TCP Protocol =============================================================================================================================//
 
-do_tcp(int PORT, char SERVER[], char DATAFILE[])
+void do_tcp(int PORT, char SERVER[], char DATAFILE[])
 
 {
 
