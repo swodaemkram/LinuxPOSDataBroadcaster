@@ -21,7 +21,7 @@
 
 
 #define BUFLEN 512                                           			  //Max length of buffer
-#define VER  "v 0.0.1\n"                                      			  //Version of software
+#define VER  "v 0.98.1\n"                                      			  //Version of software
 
 void print_help();                                            			  //declare print help function
 
@@ -95,12 +95,54 @@ int main(int argc, char *argv[])
 
 // Finished cleaning up arguments from the command line and I have passed them to their variables ======================================================
 
+// Lets do some Simple error checking
+
+      if (!SERVER)
+
+      {
+    	  printf("Need to know what server to send data to!\n");
+    	  print_help();
+
+      }
+
+      if (PORT < 1)
+
+      {
+    	  printf("Need a Port to use !\n");
+    	  print_help();
+      }
+
+      if (!PROTOCOL)
+
+      {
+    	  printf("Need to know what protocol to use!\n");
+    	  print_help();
+      }
+
+      if (!DATAFILE)
+
+      {
+    	  printf("Need Data File to send!\n");
+    	  print_help();
+      }
+
+      if (fopen(DATAFILE, "r") == 0)
+
+      {
+    	  	  	  printf("\n");
+    	  	  	  printf("Could not Open File %s ! \n", DATAFILE);
+    	  	  	  print_help();
+      }
+
+
+//---------------------------------- Finished With Simple Error Checking may add more in the future -------------------------------------------
+
       printf("\n");
       printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d \n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT);
 
 
 
-      fp = fopen(DATAFILE,"r");                                      	//open the data file
+     fp = fopen(DATAFILE,"r");                                      	//open the data file
 
       if (strcmp(PROTOCOL , "tcp") == 0)                            	//Should we do TCP connection ?
 
@@ -139,6 +181,7 @@ int main(int argc, char *argv[])
     	fgets(filebuff, 255, (FILE*)fp);
     	strcpy(message , filebuff);
 
+
     	if (REPEAT == 0 && feof(fp))
 
     			{
@@ -161,12 +204,13 @@ int main(int argc, char *argv[])
 
 
 
-
+    	printf("Sending Data... \n");
     	if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1) //Send Data through Socket
 
         {
             die("sendto()");                                	      //Connection Can't be made
         }
+
 
 
     }
@@ -273,7 +317,7 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[])
 																	//	break;
 																	//}
 
-			printf("Data Sent :\n");
+			printf("Sending Data ...\n");
 
 		}
 
@@ -290,18 +334,18 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[])
 void print_help()
 
     {
-    	 printf("\n");
-    	    	printf("posclientemu By Mark Meadows v 0.0.1\n");
+    	 	 	printf("\n");
+    	    	printf("posclientemu By Mark Meadows %s \n", VER);
+    	    	printf("a command line Point Of Sales Emulator for *nix \n ");
     	    	printf("\n");
-    	    	printf("-a, address to use\n");
-    	        printf("-p, port to use\n");
+    	    	printf("-a, I.P. address to send data to\n");
+    	        printf("-p, port to send data to\n");
     	        printf("-P, protocal to use tcp or udp\n");
     	        printf("-d, data file location Path to data file\n");
     	        printf("-l, loop data file Keep sending data in the data file over and over again\n");
     	        printf("-h, this help information\n");
-    	        printf("-v, Version info\n");
     	        printf("\n");
-    	        printf(" Example usage LinuxPOSDataBrodcaster -a 231.0.0.1 -p 20001 -P udp -d test.dat -l\n");
+    	        printf(" Example usage posclientemu -a 231.0.0.1 -p 20001 -P udp -d test.txt -l\n");
     	        printf("\n");
     	        exit(1);
     }
