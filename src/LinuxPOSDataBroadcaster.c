@@ -8,9 +8,9 @@
  ============================================================================
  */
 
-#include<stdio.h>                                                //printf
-#include<string.h>                                              //memset
-#include<stdlib.h>                                             //exit(0);
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
 #include<arpa/inet.h>
 #include<sys/socket.h>
 #include<sys/types.h>
@@ -163,7 +163,61 @@ void do_tcp(int PORT, char SERVER[], char DATAFILE[])
 
 {
 
-	printf("port: %d server: %s  Datafile: %s \n", PORT, SERVER, DATAFILE);
+
+
+	int sock;
+		struct sockaddr_in server;
+
+
+		char message[1000] , server_reply[2000];
+
+		//Create socket
+		sock = socket(AF_INET , SOCK_STREAM , 0);
+		if (sock == -1)
+		{
+			printf("Could not create socket");
+		}
+		puts("Socket created");
+
+		server.sin_addr.s_addr = inet_addr(SERVER);
+		server.sin_family = AF_INET;
+		server.sin_port = htons( PORT );
+
+		//Connect to remote server
+		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
+		{
+			perror("connect failed. Error");
+			exit (1);
+		}
+
+		puts("Connected\n");
+
+		//keep communicating with server
+		while(1)
+		{
+			printf("Enter message : ");
+			scanf("%s" , message);
+
+			//Send some data
+			if( send(sock , message , strlen(message) , 0) < 0)
+			{
+				puts("Send failed");
+				exit(1);
+			}
+
+			//Receive a reply from the server
+			if( recv(sock , server_reply , 2000 , 0) < 0)
+			{
+				puts("recv failed");
+				break;
+			}
+
+			puts("Server reply :");
+			puts(server_reply);
+		}
+
+		close(sock);
+
 
 
   exit(0);
