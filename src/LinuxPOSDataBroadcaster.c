@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     if (argc < 2 ) 	print_help(); //Do this if there are too few arguments then exit
     if (argc < 10 )  print_help(); //Too many arguments
 
-//Clean up arguments from the command line===============================================================================================//
+//Clean up arguments from the command line========================================================================//
 
       for (z = 1; z < argc; z++) //* Skip argv[0] (program name). */
 
@@ -98,9 +98,9 @@ int main(int argc, char *argv[])
 
       }
 
-// Finished cleaning up arguments from the command line and I have passed them to their variables =========================================//
+// Finished cleaning up arguments from the command line and I have passed them to their variables ==========//
 
-// ===================================================Lets do some Simple error checking===================================================//
+// ===================================================Lets do some Simple error checking====================//
 
       if (!SERVER)
 
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
       }
 
 
-//================================== Finished With Simple Error Checking may add more in the future ======================================//
+//======================= Finished With Simple Error Checking may add more in the future ====================//
 
       printf("\n");
       printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d Quiet = %d\n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT, QUIET);
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
 }
 
 
-//Lets Do TCP Protocol ====================================================================================================================//
+//Lets Do TCP Protocol =====================================================================================//
 
 void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET)
 
@@ -333,7 +333,7 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET)
 
 }
 
-//Lets Print Help ========================================================================================================================//
+//Lets Print Help ==============================================================================================//
 
 void print_help()
 
