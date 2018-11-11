@@ -92,6 +92,12 @@ int main(int argc, char *argv[])
                    case 'q' :
                 	        QUIET = 1;
                 	        break;
+
+                   case 'L' :
+                	        printf("-L is an invalid argument !\n");
+                	   	    print_help();
+                	   	    break;
+
                     }
 
                    }
