@@ -1,10 +1,10 @@
 /*
  ============================================================================
- Name        : LinuxPOSDataBroadcaster.c
+ Name        : posclientemu.c
  Author      : Mark Meadows
  Version     :
  Copyright   : copyright 2018
- Description : LinuxPOSDataBrodcaster C, Ansi-style
+ Description : posclientemu C, Ansi-style
  ============================================================================
  */
 
@@ -20,16 +20,18 @@
 #include <errno.h>
 
 
-#define BUFLEN 512                                            //Max length of buffer
-#define VER  "v 0.0.1\n"                                      //Version of software
+#define BUFLEN 512                                           			  //Max length of buffer
+#define VER  "v 0.0.1\n"                                      			  //Version of software
 
-void print_help();                                            //declare print help function
+void print_help();                                            			  //declare print help function
 
-void do_tcp(int PORT, char *SERVER, char *DATAFILE);			//Declare do_tcp structure
+void do_tcp(int PORT, int REPEAT, char *SERVER, char *DATAFILE);	  	  //Declare do_tcp structure
 
-void die(char *s)                                             //declare die function
+void die(char *s)                                             			  //declare die function
+
 {
     perror(s);
+    int fclose(FILE *fp );
     exit(1);
 }
 
@@ -43,7 +45,7 @@ int main(int argc, char *argv[])
 	char PROTOCOL[] = "udp";
     char DATAFILE[] = "default.dat";
     int REPEAT =  0;
-    char filebuff[255];                                             //File Buffer
+    char filebuff[255];                                            	       //File Buffer
     FILE *fp;
 
 	struct sockaddr_in si_other;
@@ -51,13 +53,14 @@ int main(int argc, char *argv[])
     char message[BUFLEN];
     int z;
 
-    if (argc < 2 ) 	print_help();                                  //Do this if there are too few arguments then exit
-    if (argc < 9 )  print_help();							       //Too many arguments
-                                                                   //Clean up arguments from the command line
+    if (argc < 2 ) 	print_help();                                    	//Do this if there are too few arguments then exit
+    if (argc < 9 )  print_help();							         	//Too many arguments
+    																	//Clean up arguments from the command line
 
-      for (z = 1; z < argc; z++)                                  //* Skip argv[0] (program name). */
-     {
-                   if (argv[z][0] == '-')						  //Fixes the Command Line Argument Problem !
+      for (z = 1; z < argc; z++)                                 	 	//* Skip argv[0] (program name). */
+
+      {
+                   if (argv[z][0] == '-')						 	 	//Fixes the Command Line Argument Problem !
                    {
                    switch (argv[z][1])
                     {
@@ -85,27 +88,32 @@ int main(int argc, char *argv[])
                     	     break;
 
                     }
+
                    }
-     }
+
+      }
 
 // Finished cleaning up arguments from the command line and I have passed them to their variables ======================================================
 
       printf("\n");
       printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d \n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT);
 
-      	  	  	  	  	  //Lets Open The Data File
 
-      fp = fopen(DATAFILE,"r");                                    //open the data file
 
-      if (strcmp(PROTOCOL , "tcp") == 0)                           //Should we do TCP connection ?
+      fp = fopen(DATAFILE,"r");                                      	//open the data file
+
+      if (strcmp(PROTOCOL , "tcp") == 0)                            	//Should we do TCP connection ?
+
       {
-     	      	  do_tcp(PORT, SERVER, DATAFILE);					//if yes lets to TCP
+     	      	  do_tcp(PORT, REPEAT, SERVER, DATAFILE);		    	//if yes lets Do TCP
       }
 
-      	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	//otherwise lets do UDP
-      if  ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket can't be made then Die
+      	  	  	  	  	  	  	  	  	  	  	  	  	  	  	   	    //otherwise lets do UDP
+      if  ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)    		//if the socket can't be made then Die
+
       {
         die("socket");
+        int fclose(FILE *fp );
       }
 
 
@@ -115,111 +123,164 @@ int main(int argc, char *argv[])
     si_other.sin_port = htons(PORT);
 
     if (inet_aton(SERVER , &si_other.sin_addr) == 0)
+
     {
-        fprintf(stderr, "inet_aton() failed\n");          //if we cant open a socket program fails with error 1
+        fprintf(stderr, "inet_aton() failed\n");         		       //if we cant open a socket program fails with error 1
+        int fclose(FILE *fp );
         exit(1);
     }
 
 
-    while(!feof(fp) )                                        //Send Data until the End of the data file
+    while(!feof(fp) )                                        	        //Send Data until the End of the data file
 
     {
 
-    	sleep(1);                                            //Lets Slow down just a little
+    	sleep(1);                                            	        //Lets Slow down just a little
     	fgets(filebuff, 255, (FILE*)fp);
     	strcpy(message , filebuff);
 
+    	if (REPEAT == 0 && feof(fp))
 
-    	//send the message
-        if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1) //Send Data through Socket
+    			{
+    				close(s);
+    				int fclose(FILE *fp );
+    				printf("\nData sent successfully \n");
+    			    exit(0);
+    			}
+
+    															         //send the message
+    	if (REPEAT == 1 && feof(fp))                     		        //Do We Need to repeat the data file ?
+
+    	        {
+    	        	int fclose(FILE *fp );							   //Close the data file
+    	        	fp = fopen(DATAFILE,"r");                  		   //Reopen File So We Can Repeat it again
+    	        	fgets(filebuff, 255, (FILE*)fp);
+    	        	strcpy(message , filebuff);
+
+    	        }
+
+
+
+
+    	if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1) //Send Data through Socket
 
         {
-            die("sendto()");                                //Connection Can't be made
-        }
-
-
-        if (REPEAT == 1 && feof(fp))                      //Do We Need to repeat the data file ?
-
-        {
-
-        	int fclose(FILE *fp );						//Close the data file
-        	fp = fopen(DATAFILE,"r");                   //Reopen File So We Can Repeat it again
-
+            die("sendto()");                                	      //Connection Can't be made
         }
 
 
     }
 
-    int fclose( FILE *fp ); 							//Lets Close the data file
+    int fclose( FILE *fp ); 									    //Lets Close the data file
     close(s);
-    printf("Data Sent Successfully\n");					//Print out everthing was transmitted OK
-    return 0;											//Exit Clean
+    printf("Data Sent Successfully\n");							   //Print out everthing was transmitted OK
+    return 0;													   //Exit Clean
 }
 
 
 //Lets Do TCP Protocol =============================================================================================================================//
 
-void do_tcp(int PORT, char SERVER[], char DATAFILE[])
+void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[])
 
 {
 
 
-
+	FILE *fp;
 	int sock;
 		struct sockaddr_in server;
+		char message[1000];                                         //, server_reply[2000];
+		char filebuff[255];
+
+		fp = fopen(DATAFILE,"r");
 
 
-		char message[1000] , server_reply[2000];
 
-		//Create socket
+																	//Create socket
 		sock = socket(AF_INET , SOCK_STREAM , 0);
 		if (sock == -1)
+
 		{
-			printf("Could not create socket");
+			printf("Could not create socket\n");
+			int fclose(FILE *fp );
+			exit(1);
 		}
-		puts("Socket created");
+
+																	//printf("Socket created\n");
 
 		server.sin_addr.s_addr = inet_addr(SERVER);
 		server.sin_family = AF_INET;
 		server.sin_port = htons( PORT );
 
-		//Connect to remote server
+																	//Connect to remote server
 		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
+
 		{
-			perror("connect failed. Error");
+			perror("connect failed. Error\n");
+			int fclose(FILE *fp );
 			exit (1);
 		}
 
-		puts("Connected\n");
+		printf("Connected\n\n");										//We are Connected
 
-		//keep communicating with server
-		while(1)
+																	//keep communicating with server
+		while(!feof(fp))
+
 		{
-			printf("Enter message : ");
-			scanf("%s" , message);
 
-			//Send some data
-			if( send(sock , message , strlen(message) , 0) < 0)
+
+			sleep(1);                                               //Lets Slow down just a little
+
+			            fgets(filebuff, 255, (FILE*)fp);            //Gets data to send from file
+						strcpy(message , filebuff);
+
+
+			    	if (REPEAT == 1 && feof(fp))                     //Do We Need to repeat the data file ?
+
+			    	{
+			    			int fclose(FILE *fp );                  //Close the data file
+			    			fp = fopen(DATAFILE,"r");               //Reopen File So We Can Repeat it again
+			    													// Debug printf("end of file");
+			    			fgets(filebuff, 255, (FILE*)fp);        //Gets data to send from file
+			    			strcpy(message , filebuff);
+
+			    	}
+
+
+			    	if (REPEAT == 0 && feof(fp))
+
+			    	{
+			    			close(sock);
+			    			int fclose(FILE *fp );
+			    			printf("\nData sent successfully \n");
+			    		    exit(0);
+			    	}
+
+
+			if( send(sock , message , strlen(message) , 0) < 0)		//Send some data
+
 			{
-				puts("Send failed");
+				printf("Send failed\n");
+				int fclose(FILE *fp );
 				exit(1);
 			}
 
-			//Receive a reply from the server
-			if( recv(sock , server_reply , 2000 , 0) < 0)
-			{
-				puts("recv failed");
-				break;
-			}
+																	//BlackBox Dosnt give a response we dont need this right now
+																	//and will cause the program to fail or run very slow due to timeout
+																	//Receive a reply from the server
+																	//if( recv(sock , server_reply , 2000 , 0) < 0)
+																	//{
+																	//	puts("recv failed");
+																	//	break;
+																	//}
 
-			puts("Server reply :");
-			puts(server_reply);
+			printf("Data Sent :\n");
+
 		}
 
 		close(sock);
+		int fclose(FILE *fp );
 
-
-
+		printf("\nData sent successfully \n");
   exit(0);
 
 }
@@ -230,7 +291,7 @@ void print_help()
 
     {
     	 printf("\n");
-    	    	printf("LinuxPOSDataBroadcaster By Mark Meadows v 0.0.1\n");
+    	    	printf("posclientemu By Mark Meadows v 0.0.1\n");
     	    	printf("\n");
     	    	printf("-a, address to use\n");
     	        printf("-p, port to use\n");
