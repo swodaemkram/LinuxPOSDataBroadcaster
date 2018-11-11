@@ -20,14 +20,14 @@
 #include <errno.h>
 
 
-#define BUFLEN 512                                           			  //Max length of buffer
-#define VER  "v 0.98.1\n"                                      			  //Version of software
+#define BUFLEN 512                                           			     //Max length of buffer
+#define VER  "v 0.98.1\n"                                      			     //Version of software
 
-void print_help();                                            			  //declare print help function
+void print_help();                                            			     //declare print help function
 
-void do_tcp(int PORT, int REPEAT, char *SERVER, char *DATAFILE);	  	  //Declare do_tcp structure
+void do_tcp(int PORT, int REPEAT, char *SERVER, char *DATAFILE, int QUIET ); //Declare do_tcp structure
 
-void die(char *s)                                             			  //declare die function
+void die(char *s)                                             			  	 //declare die function
 
 {
     perror(s);
@@ -52,15 +52,15 @@ int main(int argc, char *argv[])
     int s, slen=sizeof(si_other);
     char message[BUFLEN];
     int z;
+    int QUIET = 0;
+    if (argc < 2 ) 	print_help();                                    	 //Do this if there are too few arguments then exit
+    if (argc < 9 )  print_help();							         	 //Too many arguments
+    																	 //Clean up arguments from the command line
 
-    if (argc < 2 ) 	print_help();                                    	//Do this if there are too few arguments then exit
-    if (argc < 9 )  print_help();							         	//Too many arguments
-    																	//Clean up arguments from the command line
-
-      for (z = 1; z < argc; z++)                                 	 	//* Skip argv[0] (program name). */
+      for (z = 1; z < argc; z++)                                 	 	 //* Skip argv[0] (program name). */
 
       {
-                   if (argv[z][0] == '-')						 	 	//Fixes the Command Line Argument Problem !
+                   if (argv[z][0] == '-')						 	 	 //Fixes the Command Line Argument Problem !
                    {
                    switch (argv[z][1])
                     {
@@ -87,15 +87,18 @@ int main(int argc, char *argv[])
                     		 REPEAT = 1;
                     	     break;
 
+                   case 'q' :
+                	        QUIET = 1;
+                	        break;
                     }
 
                    }
 
       }
 
-// Finished cleaning up arguments from the command line and I have passed them to their variables ======================================================
+// Finished cleaning up arguments from the command line and I have passed them to their variables ============================================
 
-// Lets do some Simple error checking
+// ===================================================Lets do some Simple error checking======================================================
 
       if (!SERVER)
 
@@ -138,20 +141,20 @@ int main(int argc, char *argv[])
 //---------------------------------- Finished With Simple Error Checking may add more in the future -------------------------------------------
 
       printf("\n");
-      printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d \n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT);
+      printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d Quiet = %d\n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT, QUIET);
 
 
 
-     fp = fopen(DATAFILE,"r");                                      	//open the data file
+     fp = fopen(DATAFILE,"r");                                      	         //open the data file
 
-      if (strcmp(PROTOCOL , "tcp") == 0)                            	//Should we do TCP connection ?
+      if (strcmp(PROTOCOL , "tcp") == 0)                            	        //Should we do TCP connection ?
 
       {
-     	      	  do_tcp(PORT, REPEAT, SERVER, DATAFILE);		    	//if yes lets Do TCP
+     	      	  do_tcp(PORT, REPEAT, SERVER, DATAFILE, QUIET);		    	//if yes lets Do TCP
       }
 
-      	  	  	  	  	  	  	  	  	  	  	  	  	  	  	   	    //otherwise lets do UDP
-      if  ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)    		//if the socket can't be made then Die
+      	  	  	  	  	  	  	  	  	  	  	  	  	  	  	   	            //otherwise lets do UDP
+      if  ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)    		        //if the socket can't be made then Die
 
       {
         die("socket");
@@ -167,17 +170,17 @@ int main(int argc, char *argv[])
     if (inet_aton(SERVER , &si_other.sin_addr) == 0)
 
     {
-        fprintf(stderr, "inet_aton() failed\n");         		       //if we cant open a socket program fails with error 1
+        fprintf(stderr, "inet_aton() failed\n");         		              //if we cant open a socket program fails with error 1
         int fclose(FILE *fp );
         exit(1);
     }
 
 
-    while(!feof(fp) )                                        	        //Send Data until the End of the data file
+    while(!feof(fp) )                                        	              //Send Data until the End of the data file
 
     {
 
-    	sleep(1);                                            	        //Lets Slow down just a little
+    	sleep(1);                                            	              //Lets Slow down just a little
     	fgets(filebuff, 255, (FILE*)fp);
     	strcpy(message , filebuff);
 
@@ -191,40 +194,44 @@ int main(int argc, char *argv[])
     			    exit(0);
     			}
 
-    															         //send the message
-    	if (REPEAT == 1 && feof(fp))                     		        //Do We Need to repeat the data file ?
+    															            //send the message
+    	if (REPEAT == 1 && feof(fp))                     		            //Do We Need to repeat the data file ?
 
     	        {
-    	        	int fclose(FILE *fp );							   //Close the data file
-    	        	fp = fopen(DATAFILE,"r");                  		   //Reopen File So We Can Repeat it again
+    	        	int fclose(FILE *fp );							       //Close the data file
+    	        	fp = fopen(DATAFILE,"r");                  		       //Reopen File So We Can Repeat it again
     	        	fgets(filebuff, 255, (FILE*)fp);
     	        	strcpy(message , filebuff);
 
     	        }
 
 
+    	if(QUIET == 0)
 
-    	printf("Sending Data... \n");
-    	if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1) //Send Data through Socket
+    	{
+    		printf("Sending Data... \n");
+    	}
+
+    		if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1) //Send Data through Socket
 
         {
-            die("sendto()");                                	      //Connection Can't be made
+            die("sendto()");                                	          //Connection Can't be made
         }
 
 
 
     }
 
-    int fclose( FILE *fp ); 									    //Lets Close the data file
+    int fclose( FILE *fp ); 									          //Lets Close the data file
     close(s);
-    printf("Data Sent Successfully\n");							   //Print out everthing was transmitted OK
-    return 0;													   //Exit Clean
+    printf("Data Sent Successfully\n");							          //Print out everthing was transmitted OK
+    return 0;													          //Exit Clean
 }
 
 
 //Lets Do TCP Protocol =============================================================================================================================//
 
-void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[])
+void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET)
 
 {
 
@@ -232,14 +239,14 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[])
 	FILE *fp;
 	int sock;
 		struct sockaddr_in server;
-		char message[1000];                                         //, server_reply[2000];
+		char message[1000];                                             //, server_reply[2000];
 		char filebuff[255];
 
 		fp = fopen(DATAFILE,"r");
 
 
 
-																	//Create socket
+																	    //Create socket
 		sock = socket(AF_INET , SOCK_STREAM , 0);
 		if (sock == -1)
 
@@ -249,13 +256,13 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[])
 			exit(1);
 		}
 
-																	//printf("Socket created\n");
+																	   //printf("Socket created\n");
 
 		server.sin_addr.s_addr = inet_addr(SERVER);
 		server.sin_family = AF_INET;
 		server.sin_port = htons( PORT );
 
-																	//Connect to remote server
+																	   //Connect to remote server
 		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
 
 		{
@@ -266,25 +273,25 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[])
 
 		printf("Connected\n\n");										//We are Connected
 
-																	//keep communicating with server
+																	    //keep communicating with server
 		while(!feof(fp))
 
 		{
 
 
-			sleep(1);                                               //Lets Slow down just a little
+			sleep(1);                                                  //Lets Slow down just a little
 
-			            fgets(filebuff, 255, (FILE*)fp);            //Gets data to send from file
+			            fgets(filebuff, 255, (FILE*)fp);               //Gets data to send from file
 						strcpy(message , filebuff);
 
 
-			    	if (REPEAT == 1 && feof(fp))                     //Do We Need to repeat the data file ?
+			    	if (REPEAT == 1 && feof(fp))                       //Do We Need to repeat the data file ?
 
 			    	{
-			    			int fclose(FILE *fp );                  //Close the data file
-			    			fp = fopen(DATAFILE,"r");               //Reopen File So We Can Repeat it again
-			    													// Debug printf("end of file");
-			    			fgets(filebuff, 255, (FILE*)fp);        //Gets data to send from file
+			    			int fclose(FILE *fp );                    //Close the data file
+			    			fp = fopen(DATAFILE,"r");                 //Reopen File So We Can Repeat it again
+			    													  // Debug printf("end of file");
+			    			fgets(filebuff, 255, (FILE*)fp);          //Gets data to send from file
 			    			strcpy(message , filebuff);
 
 			    	}
@@ -316,9 +323,11 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[])
 																	//	puts("recv failed");
 																	//	break;
 																	//}
+			if(QUIET == 0)
 
-			printf("Sending Data ...\n");
-
+			{
+				printf("Sending Data ...\n");
+			}
 		}
 
 		close(sock);
@@ -335,8 +344,8 @@ void print_help()
 
     {
     	 	 	printf("\n");
-    	    	printf("posclientemu By Mark Meadows %s \n", VER);
-    	    	printf("a command line Point Of Sales Emulator for *nix \n ");
+    	    	printf("posclientemu by Mark Meadows %s ", VER);
+    	    	printf("a command line Point Of Sales Emulator for *nix \n");
     	    	printf("\n");
     	    	printf("-a, I.P. address to send data to\n");
     	        printf("-p, port to send data to\n");
@@ -344,6 +353,7 @@ void print_help()
     	        printf("-d, data file location Path to data file\n");
     	        printf("-l, loop data file Keep sending data in the data file over and over again\n");
     	        printf("-h, this help information\n");
+    	        printf("-q, quiet used to prevent echoing status to the screen when using ""&"" to put program into the background\n");
     	        printf("\n");
     	        printf(" Example usage posclientemu -a 231.0.0.1 -p 20001 -P udp -d test.txt -l\n");
     	        printf("\n");
