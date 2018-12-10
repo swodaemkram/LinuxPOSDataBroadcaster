@@ -17,20 +17,33 @@
 #include<netinet/in.h>
 #include<netdb.h>
 #include<unistd.h>
-#include <errno.h>
+#include<errno.h>
+#include<sys/stat.h>
 
 
-#define BUFLEN 512 //Max length of buffer
-#define VER  "v 0.98.3\n" //Version of software
+
+
+#define BUFLEN 1024 //Max length of buffer
+#define VER  "v 0.99.9\n" //Version of software
+
+ //out data from Mnemonic filter
 
 void print_help(); //declare print help function
 
 
-void do_tcp(int PORT, int REPEAT, char *SERVER, char *DATAFILE, int QUIET ); //Declare do_tcp structure
+void do_tcp(int PORT, int REPEAT, char *SERVER, char *DATAFILE, int QUIET, int filebuffsize ); //Declare do_tcp structure
 
-char * convertbadstring(char *message); //void convertbadstring(char *message);
-char outData[255];
+char * convertbadstring(char *message, int filebuffsize);
+
 char *FixedMessage;
+
+int filebuffsize;
+
+
+
+
+
+
 
 
 void die(char *s) //declare die function
@@ -52,16 +65,19 @@ int main(int argc, char *argv[])
     char DATAFILE[] = "default.dat";
     int REPEAT =  0;
 
-    char filebuff[1000]; //File Buffer
+    //int filebuffsize = 1024;
+
+    //char filebuff[1024]; //File Buffer
+
     FILE *fp;
 
 	struct sockaddr_in si_other;
     int s, slen=sizeof(si_other);
-    char message[BUFLEN];
-
+    //char message[BUFLEN];
 
     int z;
     int QUIET = 0;
+
     if (argc < 2 ) 	print_help(); //Do this if there are too few arguments then exit
     if (argc > 11 )  print_help(); //Too many arguments
 
@@ -120,13 +136,6 @@ int main(int argc, char *argv[])
 // Finished cleaning up arguments from the command line and I have passed them to their variables ========//
 
 // ===================================================Lets do some Simple error checking==================///
-      	  if (!SERVER)
-
-      	  {
-      		  	    	  printf("Need to know what server to send data to!\n");
-      		  	    	  print_help();
-
-      	  }
 
       	  if (PORT < 1)
 
@@ -153,12 +162,13 @@ int main(int argc, char *argv[])
 
 
 
+
       fp = fopen(DATAFILE,"r"); //open the data file
 
       if (strcmp(PROTOCOL , "tcp") == 0) //Should we do TCP connection ?
 
       {
-     	      	  do_tcp(PORT, REPEAT, SERVER, DATAFILE, QUIET); //if yes lets Do TCP
+     	      	  do_tcp(PORT, REPEAT, SERVER, DATAFILE, QUIET, filebuffsize); //if yes lets Do TCP
       }
 
       	  	  	  	  	  	  	  	  	  	  	  	  	  	  	//otherwise lets do UDP
@@ -184,18 +194,34 @@ int main(int argc, char *argv[])
     }
 
 
+
     while(!feof(fp) ) //Send Data until the End of the data file
 
     {
 
-    	sleep(1); //Lets Slow down just a little
-    	fgets(filebuff, 255, (FILE*)fp);
 
 
-    						FixedMessage = convertbadstring(filebuff);  //find and replace the Mnemonics
-        	        	    strcpy(message , FixedMessage);	 //Copy fixed message bac to message so I dont have to rewrite everything
+//////////////////////////////////Working Here ///////////////////////////////////
 
-    	if (REPEAT == 0 && feof(fp))
+    	struct stat st;
+    	stat(DATAFILE, &st);
+    	filebuffsize = st.st_size;
+    	char filebuff[filebuffsize];
+    	fgets(filebuff, filebuffsize, (FILE*)fp);
+    	char message[filebuffsize];
+
+
+
+    						FixedMessage = convertbadstring(filebuff , filebuffsize);  //find and replace the Mnemonics
+
+    						strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
+
+
+
+
+    						/////////////////////////////////////  Working Here  ///////////////////////////////////////////////////////////////////////////
+
+   	    if (REPEAT == 0 && feof(fp))
 
     			{
     				close(s);
@@ -208,14 +234,18 @@ int main(int argc, char *argv[])
     	if (REPEAT == 1 && feof(fp)) //Do We Need to repeat the data file ?
 
     	        {
+
+
     	        	int fclose(FILE *fp ); //Close the data file
+
     	        	fp = fopen(DATAFILE,"r"); //Reopen File So We Can Repeat it again
-    	        	fgets(filebuff, 255, (FILE*)fp);
 
 
+    	        	fgets(filebuff, 1024, (FILE*)fp); //*********Problem
 
-    	        			FixedMessage = convertbadstring(filebuff);  //find and replace the Mnemonics
-    	        	    	strcpy(message , FixedMessage);	 //Copy fixed message bac to message so I dont have to rewrite everything
+
+    	        			FixedMessage = convertbadstring(filebuff, filebuffsize);  //find and replace the Mnemonics
+    	        	    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 
     	        }
 
@@ -223,7 +253,7 @@ int main(int argc, char *argv[])
     	if(QUIET == 0)
 
     	{
-    		printf("Sending Data... \n");
+    		printf("Sending Data... %s\n",message);
     	}
 
     		if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
@@ -238,14 +268,14 @@ int main(int argc, char *argv[])
 
     int fclose( FILE *fp );	//Lets Close the data file
     close(s);
-    printf("Data Sent Successfully\n");	//Print out everthing was transmitted OK
+    printf("Data Sent Successfully\n");	//Print out everything was transmitted OK
     return 0;						//Exit Clean
 }
 
 
 //Lets Do TCP Protocol ===================================================================================//
 
-void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET)
+void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int filebuffsize)
 
 {
 
@@ -253,8 +283,8 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET)
 	FILE *fp;
 	int sock;
 		struct sockaddr_in server;
-		char message[255];	//, server_reply[2000];
-		char filebuff[255];
+		char message[1024];	//, server_reply[2000];
+		char filebuff[1024];
 
 
 		fp = fopen(DATAFILE,"r");
@@ -296,12 +326,15 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET)
 
 			sleep(1); //Lets Slow down just a little
 
-			            fgets(filebuff, 255, (FILE*)fp); //Gets data to send from file
+			            fgets(filebuff, 1024, (FILE*)fp); //Gets data to send from file
 
 
 
-			           FixedMessage = convertbadstring(filebuff);     //Lets fix the Mnemonic Problem ++++++++++++++++++++++++++++++++++++++++++++
-			           strcpy(message, FixedMessage);                 //Move it back to the buffer array so I don have to rewrite everything
+
+
+
+			           FixedMessage = convertbadstring(filebuff, filebuffsize);     //Lets fix the Mnemonic Problem ++++++++++++++++++++++++++++++++++++++++++++
+			           strcpy(message, FixedMessage);                 //Move it back to the buffer array so I don't have to rewrite everything
 
 
 			    	if (REPEAT == 1 && feof(fp)) //Do We Need to repeat the data file ?
@@ -310,10 +343,10 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET)
 			    			int fclose(FILE *fp ); //Close the data file
 			    			fp = fopen(DATAFILE,"r"); //Reopen File So We Can Repeat it again
 			    									// Debug printf("end of file");
-			    			fgets(filebuff, 255, (FILE*)fp); //Gets data to send from file
+			    			fgets(filebuff, 1024, (FILE*)fp); //Gets data to send from file
 
-			    			FixedMessage = convertbadstring(filebuff);     //Lets fix the Mnemonic Problem ++++++++++++++++++++++++++++++++++++++++++++
-			    			strcpy(message , filebuff);					  //Move it back to the buffer array so I don have to rewrite everything
+			    			FixedMessage = convertbadstring(filebuff, filebuffsize);     //Lets fix the Mnemonic Problem ++++++++++++++++++++++++++++++++++++++++++++
+			    			strcpy(message , filebuff);					  //Move it back to the buffer array so I don't have to rewrite everything
 
 
 			    	}
@@ -355,20 +388,20 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET)
 
 //Lets Fix Mnemonic String to Real String  =================================================================//
 
-char * convertbadstring(char filebuffer[])
+char * convertbadstring(char filebuffer[], int filebuffsize)
 
 {
 
+
 int dataIndex = 0;
 int strIndex = 0;
-int outLen = 0;
+//int outLen = 0;
+//char outData[filebuffsize];
+
+char *outData = malloc (sizeof (char)* filebuffsize);
 
 
-
-
-
-
-	char WordArray[162][7] = {
+char WordArray[162][7] = {
 		"<NUL>", "<SOH>", "<STX>", "<ETX>", "<EOT>", "<ENQ>", "<ACK>", "<BEL>",
 		"<BS>", "<HT>", "<LF>", "<VT>", "<FF>", "<CR>", "<SO>", "<SI>", "<DLE>",
 		"<DC1>", "<DC2>", "<DC3>", "<DC4>", "<NAK>", "<SYN>", "<ETB>", "<CAN>",
@@ -398,7 +431,9 @@ int outLen = 0;
 	while (strIndex < strlen(filebuffer)) {
 
 
+
 		if (filebuffer[strIndex] != '<') {
+
 
 
 			outData[dataIndex] = filebuffer[strIndex];
@@ -434,10 +469,10 @@ int outLen = 0;
 		}
 	}
 
-	outLen = dataIndex;
+
+
+	//outLen = dataIndex;
 	outData[dataIndex] = 0;
-
-
 	return outData;
 
 	}
