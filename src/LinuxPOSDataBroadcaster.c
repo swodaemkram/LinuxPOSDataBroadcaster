@@ -21,8 +21,6 @@
 #include<sys/stat.h>
 
 
-
-
 #define BUFLEN 1024 //Max length of buffer
 #define VER  "v 0.99.9\n" //Version of software
 
@@ -38,12 +36,6 @@ char * convertbadstring(char *message, int filebuffsize);
 char *FixedMessage;
 
 int filebuffsize;
-
-
-
-
-
-
 
 
 void die(char *s) //declare die function
@@ -65,15 +57,11 @@ int main(int argc, char *argv[])
     char DATAFILE[] = "default.dat";
     int REPEAT =  0;
 
-    //int filebuffsize = 1024;
-
-    //char filebuff[1024]; //File Buffer
 
     FILE *fp;
 
 	struct sockaddr_in si_other;
     int s, slen=sizeof(si_other);
-    //char message[BUFLEN];
 
     int z;
     int QUIET = 0;
@@ -201,7 +189,7 @@ int main(int argc, char *argv[])
 
 
 
-//////////////////////////////////Working Here ///////////////////////////////////
+////////////////////////////////// Get complete file  ///////////////////////////////////
 
     	struct stat st;
     	stat(DATAFILE, &st);
@@ -211,23 +199,26 @@ int main(int argc, char *argv[])
     	char message[filebuffsize];
 
 
+		FixedMessage = convertbadstring(filebuff , filebuffsize);  //find and replace the Mnemonics
 
-    						FixedMessage = convertbadstring(filebuff , filebuffsize);  //find and replace the Mnemonics
-
-    						strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
-
+		strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 
 
+ ///////////////////////////////  Got and fixed complete file  //////////////////////////////////
 
-    						/////////////////////////////////////  Working Here  ///////////////////////////////////////////////////////////////////////////
 
-   	    if (REPEAT == 0 && feof(fp))
+
+
+
+
+
+		if (REPEAT == 0 && feof(fp))
 
     			{
     				close(s);
     				int fclose(FILE *fp );
     				printf("\nData sent successfully \n");
-    			    exit(0);
+    				exit(0);
     			}
 
     											//send the message
@@ -237,15 +228,10 @@ int main(int argc, char *argv[])
 
 
     	        	int fclose(FILE *fp ); //Close the data file
-
     	        	fp = fopen(DATAFILE,"r"); //Reopen File So We Can Repeat it again
-
-
     	        	fgets(filebuff, 1024, (FILE*)fp); //*********Problem
-
-
-    	        			FixedMessage = convertbadstring(filebuff, filebuffsize);  //find and replace the Mnemonics
-    	        	    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
+        			FixedMessage = convertbadstring(filebuff, filebuffsize);  //find and replace the Mnemonics
+        	    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 
     	        }
 
@@ -256,11 +242,14 @@ int main(int argc, char *argv[])
     		printf("Sending Data... %s\n",message);
     	}
 
-    		if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
+
+
+
+    			if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
     						//Send Data through Socket
-        {
-            die("sendto()"); //Connection Can't be made
-        }
+    			{
+    			die("sendto()"); //Connection Can't be made
+    			}
 
 
 
@@ -473,11 +462,12 @@ char WordArray[162][7] = {
 
 	//outLen = dataIndex;
 	outData[dataIndex] = 0;
+	free(outData);
 	return outData;
 
 	}
 
-//Done Fixing Mnemonics in this line of the data file =====================================================//
+//Done Fixing Mnemonics in the data file =====================================================//
 
 
 //Lets Print Help =========================================================================================//
