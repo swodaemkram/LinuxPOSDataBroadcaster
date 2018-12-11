@@ -153,6 +153,11 @@ int main(int argc, char *argv[])
 
       fp = fopen(DATAFILE,"r"); //open the data file
 
+
+
+
+
+
       if (strcmp(PROTOCOL , "tcp") == 0) //Should we do TCP connection ?
 
       {
@@ -183,7 +188,7 @@ int main(int argc, char *argv[])
 
 
 
-    while(!feof(fp) ) //Send Data until the End of the data file
+     while(!feof(fp) ) //Send Data until the End of the data file
 
     {
 
@@ -193,39 +198,53 @@ int main(int argc, char *argv[])
 
     	struct stat st;
     	stat(DATAFILE, &st);
-    	filebuffsize = st.st_size;
+    	filebuffsize  = st.st_size;
+    	filebuffsize = filebuffsize + 1; // We need to get the last character
+
     	char filebuff[filebuffsize];
     	fgets(filebuff, filebuffsize, (FILE*)fp);
     	char message[filebuffsize];
-
-
 		FixedMessage = convertbadstring(filebuff , filebuffsize);  //find and replace the Mnemonics
-
 		strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 
+		int NewFileLength = strlen(message); // Length of the New Fixed File
 
- ///////////////////////////////  Got and fixed complete file  //////////////////////////////////
+		char NewMessage[100];
+		int ChunkFile = 100;
+
+		while(ChunkFile < NewFileLength){
+
+		strncpy(NewMessage,message + ChunkFile, 100); //<--- move through Variable chunking 150 characters until the end
+		ChunkFile = ChunkFile + 100;
+		printf("\n\n%s\n",NewMessage);
+		//sleep(1);
+
+		}
+
+		exit(0);
 
 
 
 
 
+///////////////////////////////  Got and fixed complete file  //////////////////////////////////
 
 
 		if (REPEAT == 0 && feof(fp))
 
     			{
-    				close(s);
+
+					close(s);
     				int fclose(FILE *fp );
     				printf("\nData sent successfully \n");
     				exit(0);
+
     			}
 
     											//send the message
     	if (REPEAT == 1 && feof(fp)) //Do We Need to repeat the data file ?
 
     	        {
-
 
     	        	int fclose(FILE *fp ); //Close the data file
     	        	fp = fopen(DATAFILE,"r"); //Reopen File So We Can Repeat it again
@@ -248,7 +267,7 @@ int main(int argc, char *argv[])
     			if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
     						//Send Data through Socket
     			{
-    			die("sendto()"); //Connection Can't be made
+    				die("sendto()"); //Connection Can't be made
     			}
 
 
