@@ -188,12 +188,6 @@ int main(int argc, char *argv[])
 
 
 
-     while(!feof(fp) ) //Send Data until the End of the data file
-
-    {
-
-
-
 ////////////////////////////////// Get complete file  ///////////////////////////////////
 
     	struct stat st;
@@ -216,21 +210,12 @@ int main(int argc, char *argv[])
 
 		strncpy(NewMessage,message + ChunkFile, 100); //<--- move through Variable chunking 150 characters until the end
 		ChunkFile = ChunkFile + 100;
-		printf("\n\n%s\n",NewMessage);
-		//sleep(1);
-
-		}
-
-		exit(0);
-
-
-
-
+		sleep(1);
 
 ///////////////////////////////  Got and fixed complete file  //////////////////////////////////
 
 
-		if (REPEAT == 0 && feof(fp))
+		if (REPEAT == 0 && ChunkFile > NewFileLength)
 
     			{
 
@@ -241,30 +226,22 @@ int main(int argc, char *argv[])
 
     			}
 
-    											//send the message
-    	if (REPEAT == 1 && feof(fp)) //Do We Need to repeat the data file ?
+    	if (REPEAT == 1 && ChunkFile > NewFileLength){
 
-    	        {
+    		ChunkFile = 100;
 
-    	        	int fclose(FILE *fp ); //Close the data file
-    	        	fp = fopen(DATAFILE,"r"); //Reopen File So We Can Repeat it again
-    	        	fgets(filebuff, 1024, (FILE*)fp); //*********Problem
-        			FixedMessage = convertbadstring(filebuff, filebuffsize);  //find and replace the Mnemonics
-        	    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
-
-    	        }
-
+    	}
 
     	if(QUIET == 0)
 
     	{
-    		printf("Sending Data... %s\n",message);
+    		printf("Sending Data... %s\n",NewMessage);
     	}
 
 
 
 
-    			if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
+    			if (sendto(s, NewMessage, strlen(NewMessage) , 0 , (struct sockaddr *) &si_other, slen)==-1)
     						//Send Data through Socket
     			{
     				die("sendto()"); //Connection Can't be made
