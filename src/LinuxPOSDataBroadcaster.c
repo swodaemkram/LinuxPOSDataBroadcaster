@@ -148,16 +148,6 @@ int main(int argc, char *argv[])
       printf("\n");
       printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d Quiet = %d\n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT, QUIET);
 
-
-
-
-      fp = fopen(DATAFILE,"r"); //open the data file
-
-
-
-
-
-
       if (strcmp(PROTOCOL , "tcp") == 0) //Should we do TCP connection ?
 
       {
@@ -186,23 +176,17 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-
-
-////////////////////////////////// Get complete file  ///////////////////////////////////
-
+        fp = fopen(DATAFILE,"r"); //open the data file
     	struct stat st;
     	stat(DATAFILE, &st);
     	filebuffsize  = st.st_size;
     	filebuffsize = filebuffsize + 1; // We need to get the last character
-
     	char filebuff[filebuffsize];
     	fgets(filebuff, filebuffsize, (FILE*)fp);
     	char message[filebuffsize];
 		FixedMessage = convertbadstring(filebuff , filebuffsize);  //find and replace the Mnemonics
 		strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
-
 		int NewFileLength = strlen(message); // Length of the New Fixed File
-
 		char NewMessage[100];
 		int ChunkFile = 100;
 
@@ -211,8 +195,6 @@ int main(int argc, char *argv[])
 		strncpy(NewMessage,message + ChunkFile, 100); //<--- move through Variable chunking 150 characters until the end
 		ChunkFile = ChunkFile + 100;
 		sleep(1);
-
-///////////////////////////////  Got and fixed complete file  //////////////////////////////////
 
 
 		if (REPEAT == 0 && ChunkFile > NewFileLength)
@@ -268,16 +250,27 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 	FILE *fp;
 	int sock;
 		struct sockaddr_in server;
-		char message[1024];	//, server_reply[2000];
-		char filebuff[1024];
-
-
-		fp = fopen(DATAFILE,"r");
 
 
 
-							//Create socket
-		sock = socket(AF_INET , SOCK_STREAM , 0);
+		        fp = fopen(DATAFILE,"r"); //open the data file
+		    	struct stat st;
+		    	stat(DATAFILE, &st);
+		    	filebuffsize  = st.st_size;
+		    	filebuffsize = filebuffsize + 1; // We need to get the last character
+		    	char filebuff[filebuffsize];
+		    	fgets(filebuff, filebuffsize, (FILE*)fp);
+		    	char message[filebuffsize];
+				FixedMessage = convertbadstring(filebuff , filebuffsize);  //find and replace the Mnemonics
+				strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
+				int NewFileLength = strlen(message); // Length of the New Fixed File
+				char NewMessage[100];
+				int ChunkFile = 100;
+
+
+
+
+		sock = socket(AF_INET , SOCK_STREAM , 0); //Create socket
 		if (sock == -1)
 
 		{
@@ -292,8 +285,8 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 		server.sin_family = AF_INET;
 		server.sin_port = htons( PORT );
 
-							//Connect to remote server
-		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
+
+		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0) //Connect to remote server
 
 		{
 			perror("connect failed. Error\n");
@@ -303,23 +296,15 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 
 		printf("Connected\n\n"); //We are Connected
 
-								//keep communicating with server
-		while(!feof(fp))
 
-		{
+		while(ChunkFile < NewFileLength){
 
 
-			sleep(1); //Lets Slow down just a little
-
-			            fgets(filebuff, 1024, (FILE*)fp); //Gets data to send from file
-
-
+			strncpy(NewMessage,message + ChunkFile, 100); //<--- move through Variable chunking 150 characters until the end
+					ChunkFile = ChunkFile + 100;
+					sleep(1);
 
 
-
-
-			           FixedMessage = convertbadstring(filebuff, filebuffsize);     //Lets fix the Mnemonic Problem ++++++++++++++++++++++++++++++++++++++++++++
-			           strcpy(message, FixedMessage);                 //Move it back to the buffer array so I don't have to rewrite everything
 
 
 			    	if (REPEAT == 1 && feof(fp)) //Do We Need to repeat the data file ?
@@ -327,12 +312,10 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 			    	{
 			    			int fclose(FILE *fp ); //Close the data file
 			    			fp = fopen(DATAFILE,"r"); //Reopen File So We Can Repeat it again
-			    									// Debug printf("end of file");
 			    			fgets(filebuff, 1024, (FILE*)fp); //Gets data to send from file
-
-			    			FixedMessage = convertbadstring(filebuff, filebuffsize);     //Lets fix the Mnemonic Problem ++++++++++++++++++++++++++++++++++++++++++++
-			    			strcpy(message , filebuff);					  //Move it back to the buffer array so I don't have to rewrite everything
-
+			    			FixedMessage = convertbadstring(filebuff, filebuffsize);  //Lets fix the Mnemonic Problem
+			    			strcpy(message , filebuff);	 //Move it back to the buffer array so I don't have to rewrite everything
+			    			exit(1);
 
 			    	}
 
@@ -347,13 +330,14 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 			    	}
 
 
-			if( send(sock , message , strlen(message) , 0) < 0)	//Send some data
+			if( send(sock , NewMessage , strlen(NewMessage) , 0) < 0)	//Send some data
 
 			{
 				printf("Send failed\n");
 				int fclose(FILE *fp );
 				exit(1);
 			}
+
 
 
 			if(QUIET == 0)
