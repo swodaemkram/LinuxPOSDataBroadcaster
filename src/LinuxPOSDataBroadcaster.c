@@ -21,7 +21,7 @@
 #include<sys/stat.h>
 
 #define BUFLEN 1024 //Max length of buffer
-#define VER  "v 1.00.1\n" //Version of software
+#define VER  "v 1.00.2\n" //Version of software
 
 void print_help(); //declare print help function
 
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
     	if(QUIET == 0)
 
     	{
-    		printf("Sending Data... %s\n",NewMessage);
+    		printf("\nSending Data...\n %s\n",NewMessage);
     	}
 
     			if (sendto(s, NewMessage, strlen(NewMessage) , 0 , (struct sockaddr *) &si_other, slen)==-1)
@@ -328,7 +328,7 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 			if(QUIET == 0)
 
 			{
-				printf("\nSending Data ... %s\n",NewMessage);
+				printf("\nSending Data ...\n %s\n",NewMessage);
 			}
 		}
 
