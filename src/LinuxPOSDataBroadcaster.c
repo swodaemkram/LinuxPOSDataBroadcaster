@@ -184,7 +184,18 @@ int main(int argc, char *argv[])
     	char filebuff[filebuffsize];
     	fgets(filebuff, filebuffsize, (FILE*)fp);
     	char message[filebuffsize];
-		FixedMessage = convertbadstring(filebuff , filebuffsize);  //find and replace the Mnemonics
+
+    	char NewFile[filebuffsize];
+
+    			    	while (!feof(fp)){ //debug
+
+    			    	fgets(filebuff, filebuffsize, (FILE*)fp);
+    			    	strcat(NewFile,filebuff);
+
+    			    	}
+
+
+    	FixedMessage = convertbadstring(NewFile , filebuffsize);  //find and replace the Mnemonics
 		strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 		int NewFileLength = strlen(message); // Length of the New Fixed File
 		char NewMessage[100];
@@ -251,23 +262,34 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 	int sock;
 		struct sockaddr_in server;
 
-
-
 		        fp = fopen(DATAFILE,"r"); //open the data file
 		    	struct stat st;
 		    	stat(DATAFILE, &st);
 		    	filebuffsize  = st.st_size;
 		    	filebuffsize = filebuffsize + 1; // We need to get the last character
 		    	char filebuff[filebuffsize];
-		    	fgets(filebuff, filebuffsize, (FILE*)fp);
 		    	char message[filebuffsize];
-				FixedMessage = convertbadstring(filebuff , filebuffsize);  //find and replace the Mnemonics
-				strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
-				int NewFileLength = strlen(message); // Length of the New Fixed File
-				char NewMessage[100];
+		    	char NewFile[filebuffsize];
+
+		    	while (!feof(fp)){ //debug
+
+		    	fgets(filebuff, filebuffsize, (FILE*)fp);
+		    	strcat(NewFile,filebuff);
+
+		    	}
+
+
+
+
+
+		    	FixedMessage = convertbadstring(NewFile , filebuffsize);  //find and replace the Mnemonics
+		    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
+		    	int NewFileLength = strlen(message); // Length of the New Fixed File
+
+
+
+		    	char NewMessage[100];
 				int ChunkFile = 100;
-
-
 
 
 		sock = socket(AF_INET , SOCK_STREAM , 0); //Create socket
@@ -279,12 +301,9 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 			exit(1);
 		}
 
-
-
 		server.sin_addr.s_addr = inet_addr(SERVER);
 		server.sin_family = AF_INET;
 		server.sin_port = htons( PORT );
-
 
 		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0) //Connect to remote server
 
@@ -299,22 +318,20 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 
 		while(ChunkFile < NewFileLength){
 
-
 			strncpy(NewMessage,message + ChunkFile, 100); //<--- move through Variable chunking 150 characters until the end
-					ChunkFile = ChunkFile + 100;
-					sleep(1);
 
+			ChunkFile = ChunkFile + 100;
+			sleep(1);
 
-
-
-			    	if (REPEAT == 1 && ChunkFile > NewFileLength) //Do We Need to repeat the data file ?
-
+			if (REPEAT == 1 && ChunkFile > NewFileLength) //Do We Need to repeat the data file ?
 			    	{
-			    			ChunkFile = 100;
+
+			    		ChunkFile = 100;
+
 			    	}
 
-
-			    	if (REPEAT == 0 && feof(fp))
+	    	if (REPEAT == 0 && ChunkFile > NewFileLength
+	    			)
 
 			    	{
 			    			close(sock);
@@ -326,18 +343,16 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 
 			if( send(sock , NewMessage , strlen(NewMessage) , 0) < 0)	//Send some data
 
-			{
-				printf("Send failed\n");
-				int fclose(FILE *fp );
-				exit(1);
-			}
-
-
+         			{
+							printf("\nSend failed\n");
+							int fclose(FILE *fp );
+							exit(1);
+		        	}
 
 			if(QUIET == 0)
 
 			{
-				printf("Sending Data ... %s\n",NewMessage);
+				printf("\nSending Data ... %s\n",NewMessage);
 			}
 		}
 
@@ -362,6 +377,7 @@ int strIndex = 0;
 //char outData[filebuffsize];
 
 char *outData = malloc (sizeof (char)* filebuffsize);
+
 
 
 char WordArray[162][7] = {
@@ -391,7 +407,8 @@ char WordArray[162][7] = {
 	};
 
 
-	while (strIndex < strlen(filebuffer)) {
+
+		while (strIndex < strlen(filebuffer)) {
 
 
 
@@ -431,7 +448,6 @@ char WordArray[162][7] = {
 			}
 		}
 	}
-
 
 
 	//outLen = dataIndex;
