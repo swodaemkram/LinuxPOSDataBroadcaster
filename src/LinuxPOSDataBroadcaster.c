@@ -20,14 +20,10 @@
 #include<errno.h>
 #include<sys/stat.h>
 
-
 #define BUFLEN 1024 //Max length of buffer
 #define VER  "v 1.00.1\n" //Version of software
 
- //out data from Mnemonic filter
-
 void print_help(); //declare print help function
-
 
 void do_tcp(int PORT, int REPEAT, char *SERVER, char *DATAFILE, int QUIET, int filebuffsize ); //Declare do_tcp structure
 
@@ -56,13 +52,9 @@ int main(int argc, char *argv[])
 	char PROTOCOL[] = "udp";
     char DATAFILE[] = "default.dat";
     int REPEAT =  0;
-
-
     FILE *fp;
-
 	struct sockaddr_in si_other;
     int s, slen=sizeof(si_other);
-
     int z;
     int QUIET = 0;
 
@@ -114,7 +106,6 @@ int main(int argc, char *argv[])
                 	   	    print_help();
                 	   	    break;
 
-
                     }
 
                    }
@@ -131,8 +122,6 @@ int main(int argc, char *argv[])
       		  	     	  printf("Need a Port to use !\n");
       		  	     	  print_help();
       	  }
-
-
 
       	  if (fopen(DATAFILE, "r") == 0)
 
@@ -151,18 +140,19 @@ int main(int argc, char *argv[])
       if (strcmp(PROTOCOL , "tcp") == 0) //Should we do TCP connection ?
 
       {
-     	      	  do_tcp(PORT, REPEAT, SERVER, DATAFILE, QUIET, filebuffsize); //if yes lets Do TCP
+
+    	  do_tcp(PORT, REPEAT, SERVER, DATAFILE, QUIET, filebuffsize); //if yes lets Do TCP
+
       }
 
       	  	  	  	  	  	  	  	  	  	  	  	  	  	  	//otherwise lets do UDP
       if  ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) //if the socket can't be made then Die
 
       {
-        die("socket");
-        int fclose(FILE *fp );
+
+    	  die("socket");
+          int fclose(FILE *fp );
       }
-
-
 
     memset((char *) &si_other, 0, sizeof(si_other));
     si_other.sin_family = AF_INET;
@@ -193,7 +183,6 @@ int main(int argc, char *argv[])
     			    	strcat(NewFile,filebuff);
 
     			    	}
-
 
     	FixedMessage = convertbadstring(NewFile , filebuffsize);  //find and replace the Mnemonics
 		strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
@@ -231,16 +220,11 @@ int main(int argc, char *argv[])
     		printf("Sending Data... %s\n",NewMessage);
     	}
 
-
-
-
     			if (sendto(s, NewMessage, strlen(NewMessage) , 0 , (struct sockaddr *) &si_other, slen)==-1)
     						//Send Data through Socket
     			{
     				die("sendto()"); //Connection Can't be made
     			}
-
-
 
     }
 
@@ -257,7 +241,6 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 
 {
 
-
 	FILE *fp;
 	int sock;
 		struct sockaddr_in server;
@@ -271,23 +254,16 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 		    	char message[filebuffsize];
 		    	char NewFile[filebuffsize];
 
-		    	while (!feof(fp)){ //debug
+		    	while (!feof(fp)){
 
 		    	fgets(filebuff, filebuffsize, (FILE*)fp);
 		    	strcat(NewFile,filebuff);
 
 		    	}
 
-
-
-
-
 		    	FixedMessage = convertbadstring(NewFile , filebuffsize);  //find and replace the Mnemonics
 		    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 		    	int NewFileLength = strlen(message); // Length of the New Fixed File
-
-
-
 		    	char NewMessage[100];
 				int ChunkFile = 100;
 
@@ -466,7 +442,7 @@ void print_help()
 
     {
     	 	 	printf("\n");
-    	    	printf("posclientemu by Mark Meadows %s ", VER);
+    	    	printf("posclientemu by Mark Meadows %s \n", VER);
     	    	printf("a command line Point Of Sales Emulator for *nix \n");
     	    	printf("\n");
     	    	printf("-a, I.P. address to send data to\n");
