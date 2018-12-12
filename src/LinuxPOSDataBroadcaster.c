@@ -22,7 +22,7 @@
 
 
 #define BUFLEN 1024 //Max length of buffer
-#define VER  "v 0.99.9\n" //Version of software
+#define VER  "v 1.00.0\n" //Version of software
 
  //out data from Mnemonic filter
 
@@ -307,16 +307,10 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 
 
 
-			    	if (REPEAT == 1 && feof(fp)) //Do We Need to repeat the data file ?
+			    	if (REPEAT == 1 && ChunkFile > NewFileLength) //Do We Need to repeat the data file ?
 
 			    	{
-			    			int fclose(FILE *fp ); //Close the data file
-			    			fp = fopen(DATAFILE,"r"); //Reopen File So We Can Repeat it again
-			    			fgets(filebuff, 1024, (FILE*)fp); //Gets data to send from file
-			    			FixedMessage = convertbadstring(filebuff, filebuffsize);  //Lets fix the Mnemonic Problem
-			    			strcpy(message , filebuff);	 //Move it back to the buffer array so I don't have to rewrite everything
-			    			exit(1);
-
+			    			ChunkFile = 100;
 			    	}
 
 
@@ -343,7 +337,7 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 			if(QUIET == 0)
 
 			{
-				printf("Sending Data ...\n");
+				printf("Sending Data ... %s\n",NewMessage);
 			}
 		}
 
