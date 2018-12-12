@@ -22,7 +22,7 @@
 
 
 #define BUFLEN 1024 //Max length of buffer
-#define VER  "v 1.00.0\n" //Version of software
+#define VER  "v 1.00.1\n" //Version of software
 
  //out data from Mnemonic filter
 
