@@ -447,7 +447,7 @@ void print_help()
     	    	printf("\n");
     	    	printf("-a, I.P. address to send data to\n");
     	        printf("-p, port to send data to\n");
-    	        printf("-P, protocal to use tcp or udp\n");
+    	        printf("-P, protocol to use tcp or udp\n");
     	        printf("-d, data file location Path to data file\n");
     	        printf("-l, loop data file Keep sending data in the data file over and over again\n");
     	        printf("-h, this help information\n");
