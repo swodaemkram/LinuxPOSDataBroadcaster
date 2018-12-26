@@ -21,7 +21,7 @@
 #include<sys/stat.h>
 
 #define BUFLEN 1024 //Max length of buffer
-#define VER  "v 1.00.2\n" //Version of software
+#define VER  "v 1.02.0\n" //Version of software
 
 void print_help(); //declare print help function
 
@@ -250,6 +250,7 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 		    	stat(DATAFILE, &st);
 		    	filebuffsize  = st.st_size;
 		    	filebuffsize = filebuffsize + 1; // We need to get the last character
+
 		    	char filebuff[filebuffsize];
 		    	char message[filebuffsize];
 		    	char NewFile[filebuffsize];
@@ -261,7 +262,9 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 
 		    	}
 
+
 		    	FixedMessage = convertbadstring(NewFile , filebuffsize);  //find and replace the Mnemonics
+
 		    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 		    	int NewFileLength = strlen(message); // Length of the New Fixed File
 		    	char NewMessage[100];
@@ -428,7 +431,8 @@ char WordArray[162][7] = {
 
 	//outLen = dataIndex;
 	outData[dataIndex] = 0;
-	free(outData);
+
+	//free(outData);
 	return outData;
 
 	}
