@@ -19,13 +19,14 @@
 #include<unistd.h>
 #include<errno.h>
 #include<sys/stat.h>
+#include<time.h>
 
 #define BUFLEN 1024 //Max length of buffer
-#define VER  "v 1.02.0\n" //Version of software
+#define VER  "v 1.05.0\n" //Version of software
 
 void print_help(); //declare print help function
 
-void do_tcp(int PORT, int REPEAT, char *SERVER, char *DATAFILE, int QUIET, int filebuffsize ); //Declare do_tcp structure
+void do_tcp(int PORT, int REPEAT, char *SERVER, char *DATAFILE, int QUIET, int filebuffsize, int RANDOM ); //Declare do_tcp structure
 
 char * convertbadstring(char *message, int filebuffsize);
 
@@ -47,23 +48,25 @@ int main(int argc, char *argv[])
 
 {
 
-	char SERVER[] = "233.0.0.1";
+	char SERVER[15] ;
 	int PORT = 8888;
-	char PROTOCOL[] = "udp";
-    char DATAFILE[] = "default.dat";
+	char PROTOCOL[3] ;
+    char DATAFILE[256];
     int REPEAT =  0;
+    int RANDOM = 0;
     FILE *fp;
 	struct sockaddr_in si_other;
     int s, slen=sizeof(si_other);
     int z;
     int QUIET = 0;
+    int dly = 0;
 
     if (argc < 2 ) 	print_help(); //Do this if there are too few arguments then exit
     if (argc > 11 )  print_help(); //Too many arguments
 
 //Clean up arguments from the command line=====================================================================//
 
-      for (z = 1; z < argc; z++) //* Skip argv[0] (program name). */
+     for (z = 1; z < argc; z++) //* Skip argv[0] (program name). */
 
       {
                    if (argv[z][0] == '-') //Fixes the Command Line Argument Problem !
@@ -74,9 +77,7 @@ int main(int argc, char *argv[])
                     {
 
 
-                   case 'a':
-                       	    strcpy (SERVER, argv[z+1]);
-                    		break;
+
 
                    case 'p' :
 
@@ -93,6 +94,10 @@ int main(int argc, char *argv[])
                     		strcpy (DATAFILE, argv[z+1]);
                     		break;
 
+                   case 'a':
+                     	    strcpy (SERVER, argv[z+1]);
+                      		break;
+
                    case 'l'  :
                     		 REPEAT = 1;
                     	     break;
@@ -106,11 +111,16 @@ int main(int argc, char *argv[])
                 	   	    print_help();
                 	   	    break;
 
+                   case 'R' :
+                	   	   RANDOM = 1;
+                	   	   break;
+
                     }
 
                    }
 
       }
+
 
 // Finished cleaning up arguments from the command line and I have passed them to their variables ========//
 
@@ -134,14 +144,29 @@ int main(int argc, char *argv[])
 
 //======================= Finished With Simple Error Checking may add more in the future ==================//
 
-      printf("\n");
-      printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d Quiet = %d\n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT, QUIET);
+      	  if (RANDOM == 1){                             //if Random is selected seed the random variable
+
+      		  srand(time(NULL));
+      		 dly = 1 + rand() % 10;
+
+      	  }
+
+      	  else {
+
+      		  dly = 1;
+      	  }
+
+
+
+
+      	  printf("\n");
+      printf("Sending data to I.P. Address %s on port %d using the %s protocol with the data file %s Repeat = %d Quiet = %d Random = %d\n\n",SERVER, PORT, PROTOCOL, DATAFILE,REPEAT, QUIET, RANDOM);
 
       if (strcmp(PROTOCOL , "tcp") == 0) //Should we do TCP connection ?
 
       {
 
-    	  do_tcp(PORT, REPEAT, SERVER, DATAFILE, QUIET, filebuffsize); //if yes lets Do TCP
+    	  do_tcp(PORT, REPEAT, SERVER, DATAFILE, QUIET, filebuffsize, RANDOM); //if yes lets Do TCP
 
       }
 
@@ -183,9 +208,12 @@ int main(int argc, char *argv[])
     			    	strcat(NewFile,filebuff);
 
     			    	}
-
+      	time_t t;
+    	time(&t);
+    	printf("\nStarted Processing Data File of %d K at %s \n",filebuffsize,ctime(&t));
     	FixedMessage = convertbadstring(NewFile , filebuffsize);  //find and replace the Mnemonics
-		strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
+    	printf("\nFinished Processing Data File at %s\n",ctime(&t));
+    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 		int NewFileLength = strlen(message); // Length of the New Fixed File
 		char NewMessage[100];
 		int ChunkFile = 100;
@@ -194,7 +222,7 @@ int main(int argc, char *argv[])
 
 		strncpy(NewMessage,message + ChunkFile, 100); //<--- move through Variable chunking 150 characters until the end
 		ChunkFile = ChunkFile + 100;
-		sleep(1);
+		sleep(dly);
 
 
 		if (REPEAT == 0 && ChunkFile > NewFileLength)
@@ -203,7 +231,8 @@ int main(int argc, char *argv[])
 
 					close(s);
     				int fclose(FILE *fp );
-    				printf("\nData sent successfully \n");
+    				time(&t);
+    				printf("\nData sent successfully at %s\n", ctime(&t));
     				exit(0);
 
     			}
@@ -230,17 +259,18 @@ int main(int argc, char *argv[])
 
     int fclose( FILE *fp );	//Lets Close the data file
     close(s);
-    printf("Data Sent Successfully\n");	//Print out everything was transmitted OK
+    time(&t);
+    printf("Data Sent Successfully at %s\n",ctime(&t));	//Print out everything was transmitted OK
     return 0;						//Exit Clean
 }
 
 
 //Lets Do TCP Protocol ===================================================================================//
 
-void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int filebuffsize)
+void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int filebuffsize, int RANDOM)
 
 {
-
+	int dly;
 	FILE *fp;
 	int sock;
 		struct sockaddr_in server;
@@ -262,9 +292,12 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 
 		    	}
 
-
+		    	time_t t;
+		    	time(&t);
+		    	printf("\nStarted Processing Data File of %d K at %s \n",filebuffsize,ctime(&t));
 		    	FixedMessage = convertbadstring(NewFile , filebuffsize);  //find and replace the Mnemonics
-
+		    	time(&t);
+		    	printf("\nFinished Processing Data File at %s\n",ctime(&t));
 		    	strcpy(message , FixedMessage);	 //Copy fixed message back to message so I don't have to rewrite everything
 		    	int NewFileLength = strlen(message); // Length of the New Fixed File
 		    	char NewMessage[100];
@@ -300,7 +333,21 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 			strncpy(NewMessage,message + ChunkFile, 100); //<--- move through Variable chunking 150 characters until the end
 
 			ChunkFile = ChunkFile + 100;
-			sleep(1);
+
+			if (RANDOM == 1){                             //if Random is selected seed the random variable
+
+			      		  srand(time(NULL));
+			      		  dly = 1 + rand() % 10;
+			      		  printf("\nDelay = %d\n",dly);
+			      	  }
+
+			      	  else {
+
+			      		  dly = 1;
+			      	  }
+
+
+			sleep(dly);
 
 			if (REPEAT == 1 && ChunkFile > NewFileLength) //Do We Need to repeat the data file ?
 			    	{
@@ -315,7 +362,9 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 			    	{
 			    			close(sock);
 			    			int fclose(FILE *fp );
-			    			printf("\nData sent successfully \n");
+
+			    			time(&t);
+			    			printf("\nData sent successfully at %s \n",ctime(&t));
 			    		    exit(0);
 			    	}
 
@@ -337,8 +386,8 @@ void do_tcp(int PORT, int REPEAT, char SERVER[], char DATAFILE[], int QUIET, int
 
 		close(sock);
 		int fclose(FILE *fp );
-
-		printf("\nData sent successfully \n");
+		time(&t);
+		printf("\nData sent successfully \n at %s",ctime(&t) );
   exit(0);
 
 }
@@ -456,13 +505,10 @@ void print_help()
     	        printf("-l, loop data file Keep sending data in the data file over and over again\n");
     	        printf("-h, this help information\n");
     	        printf("-q, quiet used to prevent echoing status to the screen when using ""&"" to put program into the background\n");
+    	        printf("-R,  Randomize the speed data is sent to emulate normal POS behavior \n");
     	        printf("\n");
     	        printf(" Example usage posclientemu -a 231.0.0.1 -p 20001 -P udp -d test.txt -l\n");
     	        printf("\n");
     	        exit(1);
     }
-
-
-
-
 
