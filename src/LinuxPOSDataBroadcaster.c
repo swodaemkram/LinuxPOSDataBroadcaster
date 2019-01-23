@@ -22,7 +22,7 @@
 #include<time.h>
 
 #define BUFLEN 1024 //Max length of buffer
-#define VER  "v 1.05.0\n" //Version of software
+#define VER  "v 1.05.6\n" //Version of software
 
 void print_help(); //declare print help function
 
@@ -448,6 +448,7 @@ char WordArray[162][7] = {
 
 			dataIndex++;
 			strIndex++;
+			printf(".");
 			continue;
 		}
 
@@ -473,6 +474,7 @@ char WordArray[162][7] = {
 				outData[dataIndex] = filebuffer[strIndex];
 				dataIndex++;
 				strIndex++;
+				printf(".\n");
 			}
 		}
 	}
